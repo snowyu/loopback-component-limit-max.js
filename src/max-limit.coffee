@@ -22,17 +22,19 @@ module.exports = (aApp, aOptions) ->
 
    for vName, Model of vModels
     vScope = Model.definition.settings.scope
-    continue if isFunction vScope
-    vLimit = vScope?.limit || maxLimit
-    continue unless isNumber vLimit
-    Model.defaultScope = ((aScope, aLimit)->
+    continue unless vScope? or maxLimit?
+    Model.definition.settings.scope = ((aScope)->
       (target, inst)->
         result = aScope
-        if target and not target.id?
-          debug "%s target %o", this.modelName, target
-          result = extend {}, aScope
-          result.limit = if target.limit < aLimit then target.limit else aLimit
-          debug "%s old scope=%o, new scope=%o", this.modelName, aScope, result
+        result = aScope.call(this, target, inst) if isFunction aScope
+
+        vLimit = result.limit if result?
+        vLimit = maxLimit unless vLimit?
+        if target and not target.id? and vLimit?
+          debug "%s target %o", @modelName, target
+          result = extend {}, result
+          result.limit = if target.limit < vLimit then target.limit else vLimit
+          debug "%s old scope=%o, new scope=%o", @modelName, aScope, result
         result
-    )(vScope, vLimit)
+    )(vScope)
   return

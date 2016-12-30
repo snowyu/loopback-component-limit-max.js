@@ -48,3 +48,7 @@ Now the client can limit the count too(<=50).
 set `DEBUG=loopback:component:limit:max` env vaiable to show debug info.
 
 ## History
+
+### V1.1.0
+
++ supports scope function in the model config.
